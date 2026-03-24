@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init:*)",
+      "Bash(pip install:*)",
+      "Bash(python -c \"import langchain, langgraph, fastapi, chromadb; print\\(''All imports successful!''\\)\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
