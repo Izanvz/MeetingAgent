@@ -1,10 +1,11 @@
 # tests/test_vector_store.py
+import uuid
 import pytest
 from src.db.vector_store import VectorStore
 
 @pytest.fixture
 def store():
-    return VectorStore(ephemeral=True)
+    return VectorStore(ephemeral=True, collection_name=f"test_{uuid.uuid4().hex}")
 
 def test_index_and_search(store):
     segments = [

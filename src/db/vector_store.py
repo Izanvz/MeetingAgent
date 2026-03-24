@@ -2,13 +2,14 @@ import chromadb
 
 
 class VectorStore:
-    def __init__(self, host: str = "localhost", port: int = 8001, ephemeral: bool = False):
+    def __init__(self, host: str = "localhost", port: int = 8001, ephemeral: bool = False,
+                 collection_name: str = "meeting_segments"):
         if ephemeral:
             self.client = chromadb.EphemeralClient()
         else:
             self.client = chromadb.HttpClient(host=host, port=port)
         self.collection = self.client.get_or_create_collection(
-            name="meeting_segments",
+            name=collection_name,
             metadata={"hnsw:space": "cosine"},
         )
 
