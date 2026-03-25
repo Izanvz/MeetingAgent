@@ -1,6 +1,4 @@
-import pytest
-from unittest.mock import patch
-from fastapi.testclient import TestClient
+from unittest.mock import MagicMock
 
 MOCK_RESULTS = [
     {"text": "We'll prepare the demo by Friday.", "speaker": "SPEAKER_00",
@@ -9,23 +7,29 @@ MOCK_RESULTS = [
 ]
 
 
-@pytest.fixture
-def client():
+def _mock_store(results):
+    store = MagicMock()
+    store.search.return_value = results
+    return store
+
+
+def test_search_returns_results():
     from src.api.main import create_app
-    return TestClient(create_app())
-
-
-def test_search_returns_results(client):
-    with patch("src.api.routes.search.VectorStore") as MockStore:
-        MockStore.return_value.search.return_value = MOCK_RESULTS
-        res = client.post("/search", json={"query": "demo preparation", "top_k": 5})
+    from src.api.deps import get_vector_store
+    from fastapi.testclient import TestClient
+    app = create_app()
+    app.dependency_overrides[get_vector_store] = lambda: _mock_store(MOCK_RESULTS)
+    res = TestClient(app).post("/search", json={"query": "demo preparation", "top_k": 5})
     assert res.status_code == 200
     assert res.json()["results"][0]["speaker"] == "SPEAKER_00"
 
 
-def test_search_empty_results(client):
-    with patch("src.api.routes.search.VectorStore") as MockStore:
-        MockStore.return_value.search.return_value = []
-        res = client.post("/search", json={"query": "nonexistent topic"})
+def test_search_empty_results():
+    from src.api.main import create_app
+    from src.api.deps import get_vector_store
+    from fastapi.testclient import TestClient
+    app = create_app()
+    app.dependency_overrides[get_vector_store] = lambda: _mock_store([])
+    res = TestClient(app).post("/search", json={"query": "nonexistent topic"})
     assert res.status_code == 200
     assert res.json()["results"] == []

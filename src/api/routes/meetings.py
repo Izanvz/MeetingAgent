@@ -1,13 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from src.api.models import MeetingResponse, MeetingDetailResponse, ActionItemResponse
+from src.api.deps import get_db
 from src.db.sqlite import Database
 
 router = APIRouter()
-_db_path = "data/meetings.db"
-
-
-def get_db() -> Database:
-    return Database(_db_path)
 
 
 @router.get("/meetings", response_model=list[MeetingResponse])

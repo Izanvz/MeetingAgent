@@ -1,7 +1,20 @@
 import json
+import uuid
 
 from src.agent.state import MeetingAgentState
-from src.agent.tools import analyze_transcript, extract_action_items, generate_report
+from src.agent.tools import (
+    analyze_transcript,
+    extract_action_items,
+    generate_report,
+    get_vector_store,
+)
+from src.db.sqlite import Database
+
+import os
+
+
+def _get_db() -> Database:
+    return Database(os.getenv("DB_PATH", "data/meetings.db"))
 
 
 def node_analyze(state: MeetingAgentState) -> dict:
@@ -22,14 +35,47 @@ def node_extract(state: MeetingAgentState) -> dict:
 
 
 def node_report(state: MeetingAgentState) -> dict:
-    """Step 3: generate markdown report and persist to SQLite."""
+    """Step 3: generate markdown report (LLM only, no side effects)."""
     result = generate_report.invoke({
-        "meeting_id": state["meeting_id"],
         "meeting_title": state["meeting_title"],
         "meeting_date": state["meeting_date"],
         "summary": state["summary"],
         "decisions_json": json.dumps(state["decisions"]),
         "action_items_json": json.dumps(state["action_items"]),
-        "segments_json": json.dumps(state["transcript_segments"]),
     })
     return {"report_markdown": result.get("report_markdown", "")}
+
+
+def node_persist(state: MeetingAgentState) -> dict:
+    """Step 4: persist to ChromaDB and SQLite (side effects only)."""
+    segments = state["transcript_segments"]
+    speakers = list({seg.get("speaker", "") for seg in segments if seg.get("speaker")})
+    duration_s = max((seg.get("end", 0) for seg in segments), default=None)
+
+    # ChromaDB first — if this fails, nothing is persisted (consistent state)
+    get_vector_store().index_segments(
+        meeting_id=state["meeting_id"],
+        meeting_title=state["meeting_title"],
+        date=state["meeting_date"],
+        segments=segments,
+    )
+
+    # SQLite after — only runs if ChromaDB succeeded
+    db = _get_db()
+    db.create_meeting({
+        "id": state["meeting_id"],
+        "title": state["meeting_title"],
+        "date": state["meeting_date"],
+        "duration_s": duration_s,
+        "speakers": speakers,
+        "decisions": state["decisions"],
+        "summary": state["summary"],
+        "report_md": state["report_markdown"],
+    })
+    for item in state["action_items"]:
+        db.create_action_item({
+            "id": str(uuid.uuid4()),
+            "meeting_id": state["meeting_id"],
+            **item,
+        })
+    return {}

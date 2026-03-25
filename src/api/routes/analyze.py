@@ -1,21 +1,17 @@
 import uuid
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from src.api.models import AnalyzeRequest, JobResponse
+from src.api.deps import get_db
 from src.agent.graph import build_graph
 from src.agent.state import MeetingAgentState
 from src.db.sqlite import Database
 
 router = APIRouter()
 _graph = build_graph()
-_db_path = "data/meetings.db"
-
-
-def get_db() -> Database:
-    return Database(_db_path)
 
 
 async def run_agent(job_id: str, payload: AnalyzeRequest):
-    db = Database(_db_path)
+    db = get_db()
     meeting_id = str(uuid.uuid4())
     try:
         state: MeetingAgentState = {
