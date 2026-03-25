@@ -1,8 +1,22 @@
 import json
 import os
+import re
 import uuid
 
 from langchain_core.tools import tool
+
+
+def _parse_json(text: str) -> dict:
+    """Extract and parse JSON from LLM output, handling common quirks."""
+    # Strip markdown code fences
+    text = re.sub(r"```(?:json)?", "", text).strip()
+    # Remove trailing commas before } or ]
+    text = re.sub(r",\s*([\}\]])", r"\1", text)
+    # Extract first JSON object or array
+    match = re.search(r"(\{.*\}|\[.*\])", text, re.DOTALL)
+    if match:
+        text = match.group(1)
+    return json.loads(text)
 
 from src.db.sqlite import Database
 from src.db.vector_store import VectorStore
@@ -26,8 +40,7 @@ Return a JSON object with:
 
 Respond ONLY with valid JSON."""
     response = llm.invoke(prompt)
-    content = response.content.strip().removeprefix("```json").removesuffix("```").strip()
-    return json.loads(content)
+    return _parse_json(response.content)
 
 
 @tool
@@ -49,8 +62,7 @@ Return a JSON object with:
 
 Respond ONLY with valid JSON."""
     response = llm.invoke(prompt)
-    content = response.content.strip().removeprefix("```json").removesuffix("```").strip()
-    return json.loads(content)
+    return _parse_json(response.content)
 
 
 @tool
