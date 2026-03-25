@@ -1,13 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from src.api.models import ActionItemResponse, UpdateTaskRequest
+from src.api.deps import get_db
 from src.db.sqlite import Database
 
 router = APIRouter()
-_db_path = "data/meetings.db"
-
-
-def get_db() -> Database:
-    return Database(_db_path)
 
 
 @router.get("/tasks", response_model=list[ActionItemResponse])

@@ -2,25 +2,39 @@ import json
 import os
 import re
 import uuid
+from functools import lru_cache
 
 from langchain_core.tools import tool
+
+from src.db.sqlite import Database
+from src.db.vector_store import VectorStore
+from src.providers.llm import get_llm
 
 
 def _parse_json(text: str) -> dict:
     """Extract and parse JSON from LLM output, handling common quirks."""
-    # Strip markdown code fences
     text = re.sub(r"```(?:json)?", "", text).strip()
-    # Remove trailing commas before } or ]
     text = re.sub(r",\s*([\}\]])", r"\1", text)
-    # Extract first JSON object or array
     match = re.search(r"(\{.*\}|\[.*\])", text, re.DOTALL)
     if match:
         text = match.group(1)
     return json.loads(text)
 
-from src.db.sqlite import Database
-from src.db.vector_store import VectorStore
-from src.providers.llm import get_llm
+
+def _parse_json_safe(text: str, default: dict) -> dict:
+    """Like _parse_json but returns default on failure instead of raising."""
+    try:
+        return _parse_json(text)
+    except (json.JSONDecodeError, AttributeError):
+        return default
+
+
+@lru_cache(maxsize=1)
+def get_vector_store() -> VectorStore:
+    return VectorStore(
+        host=os.getenv("CHROMA_HOST", "localhost"),
+        port=int(os.getenv("CHROMA_PORT", "8001")),
+    )
 
 
 @tool
@@ -40,7 +54,7 @@ Return a JSON object with:
 
 Respond ONLY with valid JSON."""
     response = llm.invoke(prompt)
-    return _parse_json(response.content)
+    return _parse_json_safe(response.content, {"summary": "", "decisions": [], "participants": []})
 
 
 @tool
@@ -62,25 +76,20 @@ Return a JSON object with:
 
 Respond ONLY with valid JSON."""
     response = llm.invoke(prompt)
-    return _parse_json(response.content)
+    return _parse_json_safe(response.content, {"action_items": []})
 
 
 @tool
 def generate_report(
-    meeting_id: str,
     meeting_title: str,
     meeting_date: str,
     summary: str,
     decisions_json: str,
     action_items_json: str,
-    segments_json: str,
-    db_path: str = "data/meetings.db",
 ) -> dict:
-    """Generate a markdown report and persist meeting to SQLite.
-    Returns dict with report_markdown."""
+    """Generate a markdown report from meeting data. Returns dict with report_markdown."""
     decisions = json.loads(decisions_json)
     action_items = json.loads(action_items_json)
-    segments = json.loads(segments_json)
 
     llm = get_llm()
     prompt = f"""Write a professional meeting report in markdown.
@@ -93,50 +102,12 @@ Action Items: {action_items}
 
 Include sections: Summary, Key Decisions, Action Items (with checkboxes), Participants."""
     response = llm.invoke(prompt)
-    report_md = response.content.strip()
-
-    db = Database(db_path)
-    speakers = list({seg.get("speaker", "") for seg in segments if seg.get("speaker")})
-    duration_s = max((seg.get("end", 0) for seg in segments), default=None)
-
-    store = VectorStore(
-        host=os.getenv("CHROMA_HOST", "localhost"),
-        port=int(os.getenv("CHROMA_PORT", "8001")),
-    )
-    store.index_segments(
-        meeting_id=meeting_id,
-        meeting_title=meeting_title,
-        date=meeting_date,
-        segments=segments,
-    )
-
-    db.create_meeting({
-        "id": meeting_id,
-        "title": meeting_title,
-        "date": meeting_date,
-        "duration_s": duration_s,
-        "speakers": speakers,
-        "decisions": decisions,
-        "summary": summary,
-        "report_md": report_md,
-    })
-    for item in action_items:
-        db.create_action_item({
-            "id": str(uuid.uuid4()),
-            "meeting_id": meeting_id,
-            **item,
-        })
-
-    return {"report_markdown": report_md}
+    return {"report_markdown": response.content.strip()}
 
 
 @tool
 def search_meetings(query: str, top_k: int = 5) -> dict:
     """Search past meeting transcripts using semantic similarity.
     Returns dict with results list (text, speaker, start, end, meeting_id, meeting_title, date)."""
-    store = VectorStore(
-        host=os.getenv("CHROMA_HOST", "localhost"),
-        port=int(os.getenv("CHROMA_PORT", "8001")),
-    )
-    results = store.search(query=query, top_k=top_k)
+    results = get_vector_store().search(query=query, top_k=top_k)
     return {"results": results}
