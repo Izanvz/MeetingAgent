@@ -87,6 +87,17 @@ Include sections: Summary, Key Decisions, Action Items (with checkboxes), Partic
     speakers = list({seg.get("speaker", "") for seg in segments if seg.get("speaker")})
     duration_s = max((seg.get("end", 0) for seg in segments), default=None)
 
+    store = VectorStore(
+        host=os.getenv("CHROMA_HOST", "localhost"),
+        port=int(os.getenv("CHROMA_PORT", "8001")),
+    )
+    store.index_segments(
+        meeting_id=meeting_id,
+        meeting_title=meeting_title,
+        date=meeting_date,
+        segments=segments,
+    )
+
     db.create_meeting({
         "id": meeting_id,
         "title": meeting_title,

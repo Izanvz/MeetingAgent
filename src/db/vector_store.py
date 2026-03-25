@@ -26,6 +26,8 @@ class VectorStore:
                 "end": seg.get("end", 0.0),
                 "date": date,
             })
+        if not ids:
+            return
         self.collection.add(ids=ids, documents=documents, metadatas=metadatas)
 
     def search(self, query: str, top_k: int = 5) -> list[dict]:

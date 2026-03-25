@@ -51,6 +51,9 @@ def get_job(job_id: str, db: Database = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Job not found")
     if job["status"] == "done" and job.get("meeting_id"):
         meeting = db.get_meeting(job["meeting_id"])
+        if meeting is None:
+            return JobResponse(job_id=job["id"], status="error",
+                               error="Meeting analysed but not persisted — check agent logs")
         items = db.list_action_items(meeting_id=job["meeting_id"])
         return JobResponse(
             job_id=job["id"], status=job["status"],

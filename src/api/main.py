@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI
 from src.api.routes.analyze import router as analyze_router
 from src.api.routes.meetings import router as meetings_router

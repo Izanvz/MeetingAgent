@@ -1,38 +1,35 @@
 import json
 
-from langchain_core.messages import SystemMessage
-from langgraph.prebuilt import ToolNode
-
 from src.agent.state import MeetingAgentState
-from src.agent.tools import analyze_transcript, extract_action_items, generate_report, search_meetings
-from src.providers.llm import get_llm
-
-TOOLS = [analyze_transcript, extract_action_items, generate_report, search_meetings]
-
-SYSTEM_PROMPT = """You are a meeting analysis assistant. You receive a meeting transcript in WhisperX format.
-
-Your job:
-1. Call analyze_transcript with the segments to get summary, decisions, and participants.
-2. Call extract_action_items with the segments to get tasks with owners and deadlines.
-3. Call generate_report to persist everything to the database and get the markdown report.
-
-Call the tools in this order. Do not skip steps. After generate_report, you are done."""
+from src.agent.tools import analyze_transcript, extract_action_items, generate_report
 
 
-def agent_node(state: MeetingAgentState) -> dict:
-    llm = get_llm().bind_tools(TOOLS)
-    messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
-    if not state["messages"]:
-        messages.append({"role": "user", "content": json.dumps(state["transcript_segments"])})
-    response = llm.invoke(messages)
-    return {"messages": state["messages"] + [response]}
+def node_analyze(state: MeetingAgentState) -> dict:
+    """Step 1: summarise the transcript and extract decisions."""
+    segments_json = json.dumps(state["transcript_segments"])
+    result = analyze_transcript.invoke({"segments_json": segments_json})
+    return {
+        "summary": result.get("summary", ""),
+        "decisions": result.get("decisions", []),
+    }
 
 
-def should_continue(state: MeetingAgentState) -> str:
-    last = state["messages"][-1]
-    if hasattr(last, "tool_calls") and last.tool_calls:
-        return "tools"
-    return "__end__"
+def node_extract(state: MeetingAgentState) -> dict:
+    """Step 2: extract action items with owners and deadlines."""
+    segments_json = json.dumps(state["transcript_segments"])
+    result = extract_action_items.invoke({"segments_json": segments_json})
+    return {"action_items": result.get("action_items", [])}
 
 
-tool_node = ToolNode(TOOLS)
+def node_report(state: MeetingAgentState) -> dict:
+    """Step 3: generate markdown report and persist to SQLite."""
+    result = generate_report.invoke({
+        "meeting_id": state["meeting_id"],
+        "meeting_title": state["meeting_title"],
+        "meeting_date": state["meeting_date"],
+        "summary": state["summary"],
+        "decisions_json": json.dumps(state["decisions"]),
+        "action_items_json": json.dumps(state["action_items"]),
+        "segments_json": json.dumps(state["transcript_segments"]),
+    })
+    return {"report_markdown": result.get("report_markdown", "")}
