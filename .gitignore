@@ -15,3 +15,7 @@ data/
 *.db
 .pytest_cache/
 .coverage
+chroma/
+.agents/
+skills-lock.json
+venvMA/
