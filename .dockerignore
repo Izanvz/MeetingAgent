@@ -1,0 +1,9 @@
+venvMA/
+__pycache__/
+*.pyc
+.env
+data/
+tests/
+.git/
+*.md
+chroma/
