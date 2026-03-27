@@ -6,6 +6,8 @@ from src.api.routes.analyze import router as analyze_router
 from src.api.routes.meetings import router as meetings_router
 from src.api.routes.tasks import router as tasks_router
 from src.api.routes.search import router as search_router
+from src.api.routes.audio import router as audio_router
+from src.api.routes.export import router as export_router
 
 
 def create_app(db_path: str = "data/meetings.db") -> FastAPI:
@@ -18,6 +20,8 @@ def create_app(db_path: str = "data/meetings.db") -> FastAPI:
     app.include_router(meetings_router)
     app.include_router(tasks_router)
     app.include_router(search_router)
+    app.include_router(audio_router)
+    app.include_router(export_router)
     return app
 
 
