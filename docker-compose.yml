@@ -11,14 +11,16 @@ services:
       - CHROMA_PORT=8000
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - OLLAMA_BASE_URL=http://ollama:11434
       - OLLAMA_MODEL=${OLLAMA_MODEL:-mistral:7b}
+      - WHISPER_DEVICE=cpu
+      - WHISPER_COMPUTE_TYPE=int8
     depends_on:
       chromadb:
         condition: service_healthy
+      ollama:
+        condition: service_healthy
     restart: on-failure
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   chromadb:
     image: chromadb/chroma:latest
@@ -33,5 +35,31 @@ services:
       retries: 12
       start_period: 10s
 
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-mistral:7b}
+    # Arranca el servidor y descarga el modelo si no está ya en el volumen
+    entrypoint: /bin/sh -c "ollama serve & sleep 5 && ollama pull $$OLLAMA_MODEL &>/proc/1/fd/1 & wait"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/11434"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    # Para usar GPU — requiere NVIDIA Container Toolkit en el host:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
 volumes:
   chroma_data:
+  ollama_data:

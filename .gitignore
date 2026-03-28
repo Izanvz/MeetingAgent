@@ -21,3 +21,10 @@ skills-lock.json
 venvMA/
 CLAUDE.md
 PROYECTO_RESUMEN.md
+.playwright-mcp/
+*.mp3
+*.wav
+*.m4a
+*.flac
+generate_test_audio.py
+test_meeting*
