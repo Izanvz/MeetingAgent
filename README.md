@@ -168,3 +168,9 @@ pytest
 ## Demo web
 
 Hay una demo estática (sin API real) en: https://github.com/Izanvz/meeting-agent-demo
+
+---
+
+## Créditos
+
+El diseño y desarrollo del dashboard web (`src/api/static/index.html`) fue realizado por [Claude](https://claude.ai) (Anthropic) — incluyendo la interfaz, las exportaciones a ICS/Google Calendar/Jira/CSV, y la integración con la API.
