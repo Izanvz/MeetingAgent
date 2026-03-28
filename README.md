@@ -20,8 +20,7 @@ El pipeline usa LangGraph. Cada paso es un nodo independiente con estado compart
 
 ## Requisitos
 
-- **Docker + Docker Compose** — la forma más fácil, levanta todo con un comando
-- **Ollama** — para el LLM local (no se dockeriza, corre en el host con acceso a GPU)
+- **Docker + Docker Compose** — la forma más fácil, levanta todo con un comando (API, ChromaDB y Ollama incluidos)
 
 Si no quieres Docker, también puedes levantarlo a mano con Python 3.12+.
 
@@ -29,14 +28,7 @@ Si no quieres Docker, también puedes levantarlo a mano con Python 3.12+.
 
 ## Empezar (con Docker)
 
-**1. Instala Ollama y descarga el modelo**
-
-```bash
-# Instala desde https://ollama.com
-ollama pull mistral:7b
-```
-
-**2. Clona y configura**
+**1. Clona y configura**
 
 ```bash
 git clone https://github.com/Izanvz/MeetingAgent
@@ -45,15 +37,17 @@ cp .env.example .env
 # Edita .env si quieres cambiar algo (por defecto va con Ollama + mistral:7b)
 ```
 
-**3. Levanta**
+**2. Levanta**
 
 ```bash
 docker compose up --build
 ```
 
-Eso es todo. La API estará en `http://localhost:8000` y el dashboard en la misma URL.
+Eso es todo. Docker levanta la API, ChromaDB y Ollama automáticamente. La primera vez descarga el modelo `mistral:7b` (~4 GB) — puedes ver el progreso con `docker logs -f meetingagent-ollama-1`. Las siguientes veces arranca en segundos.
 
-> La primera vez tarda un poco — Docker descarga la imagen de ChromaDB y construye el contenedor de la API. Las siguientes veces arranca en segundos.
+La API y el dashboard estarán en `http://localhost:8000`.
+
+> **GPU**: Si tienes NVIDIA y el [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) instalado, descomenta la sección `deploy` del servicio `ollama` en `docker-compose.yml` para usar la GPU.
 
 ---
 
