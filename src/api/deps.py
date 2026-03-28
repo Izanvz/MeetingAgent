@@ -14,7 +14,9 @@ def get_db() -> Database:
 
 @lru_cache(maxsize=1)
 def get_vector_store() -> VectorStore:
+    ephemeral = os.getenv("CHROMA_EPHEMERAL", "0").lower() in ("1", "true", "yes")
     return VectorStore(
         host=os.getenv("CHROMA_HOST", "localhost"),
         port=int(os.getenv("CHROMA_PORT", "8001")),
+        ephemeral=ephemeral,
     )
