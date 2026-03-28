@@ -1,5 +1,5 @@
 """
-Jira integration — exports action items as Tasks via Jira REST API v3.
+Jira integration - exports action items as Tasks via Jira REST API v3.
 
 Required env vars:
     JIRA_BASE_URL      e.g. https://yourcompany.atlassian.net

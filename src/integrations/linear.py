@@ -1,5 +1,5 @@
 """
-Linear integration — exports action items as Issues via Linear GraphQL API.
+Linear integration - exports action items as Issues via Linear GraphQL API.
 
 Required env vars:
     LINEAR_API_KEY     Personal API key (linear.app → Settings → API → Personal keys)

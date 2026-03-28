@@ -2,7 +2,7 @@
 
 Carpeta para experimentar sin miedo a romper nada.
 
-Aquí van scripts sueltos, pruebas de concepto, y cualquier cosa que quieras probar antes de meterla en el código real. No hay estándares, no hay tests, no hay estructura obligatoria — es exactamente lo que parece: un sitio para jugar.
+Aquí van scripts sueltos, pruebas de concepto, y cualquier cosa que quieras probar antes de meterla en el código real. No hay estándares, no hay tests, no hay estructura obligatoria. Es exactamente lo que parece: un sitio para jugar.
 
 Ejemplos de uso:
 - Probar un nodo de LangGraph antes de integrarlo en el pipeline

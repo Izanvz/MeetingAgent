@@ -1,5 +1,5 @@
 """
-Webhook integration — POSTs a standardized payload to any URL.
+Webhook integration - POSTs a standardized payload to any URL.
 
 Enables connection to Zapier, Make.com, n8n, Slack, or any internal system
 without implementing each one individually.
@@ -43,7 +43,7 @@ def _build_payload(meeting_id: str, meeting_title: str, action_items: list[dict]
 class WebhookExporter(BaseExporter):
     @property
     def configured(self) -> bool:
-        # Webhook is always "configured" — the URL is passed per-request.
+        # Webhook is always "configured" - the URL is passed per-request.
         # Returns False only when called without config (used in dry-run).
         return True
 
@@ -80,5 +80,5 @@ class WebhookExporter(BaseExporter):
             meeting_id=meeting_id,
             created_ids=[url],
             payload_preview=[payload],
-            message=f"Payload delivered to {url} — HTTP {res.status_code}.",
+            message=f"Payload delivered to {url} - HTTP {res.status_code}.",
         )

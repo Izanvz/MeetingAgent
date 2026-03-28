@@ -52,7 +52,7 @@ def node_persist(state: MeetingAgentState) -> dict:
     speakers = list({seg.get("speaker", "") for seg in segments if seg.get("speaker")})
     duration_s = max((seg.get("end", 0) for seg in segments), default=None)
 
-    # ChromaDB first — if this fails, nothing is persisted (consistent state)
+    # ChromaDB first - if this fails, nothing is persisted (consistent state)
     get_vector_store().index_segments(
         meeting_id=state["meeting_id"],
         meeting_title=state["meeting_title"],
@@ -60,7 +60,7 @@ def node_persist(state: MeetingAgentState) -> dict:
         segments=segments,
     )
 
-    # SQLite after — only runs if ChromaDB succeeded
+    # SQLite after - only runs if ChromaDB succeeded
     db = _get_db()
     db.create_meeting({
         "id": state["meeting_id"],

@@ -22,7 +22,7 @@ def _get_model() -> WhisperModel:
 def transcribe(audio_path: str) -> list[TranscriptSegment]:
     """Transcribe an audio file and return transcript segments.
 
-    Speaker diarization is not included — all segments are labeled
+    Speaker diarization is not included. All segments are labeled
     'Speaker 1'. Pass the result through the existing LangGraph pipeline
     which extracts participants from context when possible.
     """

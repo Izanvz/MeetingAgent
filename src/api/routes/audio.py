@@ -60,7 +60,7 @@ async def _transcribe_and_analyze(
 
         segments = await asyncio.to_thread(transcribe, tmp_path)
         if not segments:
-            db.fail_job(job_id, "Transcription returned no segments — check audio quality")
+            db.fail_job(job_id, "Transcription returned no segments - check audio quality")
             return
 
         payload = AnalyzeRequest(title=title, date=meeting_date, segments=segments)
