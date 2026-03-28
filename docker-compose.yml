@@ -51,7 +51,7 @@ services:
       timeout: 5s
       retries: 12
       start_period: 20s
-    # Para usar GPU — requiere NVIDIA Container Toolkit en el host:
+    # Para usar GPU - requiere NVIDIA Container Toolkit en el host:
     # deploy:
     #   resources:
     #     reservations:

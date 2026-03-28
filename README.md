@@ -14,13 +14,13 @@ Subes un audio → el agente lo transcribe con Whisper → lo analiza con un LLM
 audio.mp3  →  [Whisper]  →  [LLM: resumir]  →  [LLM: action items]  →  [LLM: informe]  →  SQLite + ChromaDB
 ```
 
-El pipeline usa LangGraph. Cada paso es un nodo independiente con estado compartido — si algo falla, sabes exactamente dónde y por qué.
+El pipeline usa LangGraph. Cada paso es un nodo independiente con estado compartido. Si algo falla, sabes exactamente dónde y por qué.
 
 ---
 
 ## Requisitos
 
-- **Docker + Docker Compose** — la forma más fácil, levanta todo con un comando (API, ChromaDB y Ollama incluidos)
+- **Docker + Docker Compose**: la forma más fácil, levanta todo con un comando (API, ChromaDB y Ollama incluidos)
 
 Si no quieres Docker, también puedes levantarlo a mano con Python 3.12+.
 
@@ -43,7 +43,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Eso es todo. Docker levanta la API, ChromaDB y Ollama automáticamente. La primera vez descarga el modelo `mistral:7b` (~4 GB) — puedes ver el progreso con `docker logs -f meetingagent-ollama-1`. Las siguientes veces arranca en segundos.
+Eso es todo. Docker levanta la API, ChromaDB y Ollama automáticamente. La primera vez descarga el modelo `mistral:7b` (~4 GB), puedes ver el progreso con `docker logs -f meetingagent-ollama-1`. Las siguientes veces arranca en segundos.
 
 La API y el dashboard estarán en `http://localhost:8000`.
 
@@ -84,8 +84,8 @@ Copia `.env.example` a `.env` y ajusta lo que necesites:
 | `LLM_PROVIDER` | `ollama` | LLM a usar: `ollama`, `openai`, `anthropic` |
 | `OLLAMA_MODEL` | `mistral:7b` | Modelo Ollama. `llama3:8b` también funciona bien |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | URL de Ollama |
-| `OPENAI_API_KEY` | — | Solo si `LLM_PROVIDER=openai` |
-| `ANTHROPIC_API_KEY` | — | Solo si `LLM_PROVIDER=anthropic` |
+| `OPENAI_API_KEY` | - | Solo si `LLM_PROVIDER=openai` |
+| `ANTHROPIC_API_KEY` | - | Solo si `LLM_PROVIDER=anthropic` |
 | `WHISPER_DEVICE` | `cpu` | `cuda` si tienes GPU NVIDIA |
 | `WHISPER_COMPUTE_TYPE` | `int8` | `float16` para mejor calidad en GPU |
 | `CHROMA_HOST` | `localhost` | Host de ChromaDB (automático con Docker) |
@@ -101,9 +101,9 @@ Abre `http://localhost:8000` en el navegador.
 
 Tres pestañas:
 
-- **Subir audio** — arrastra un mp3/wav/m4a, ponle título y fecha, y dale a analizar. Verás el pipeline en tiempo real mientras procesa.
-- **Reuniones** — lista de todas las reuniones analizadas. Expandible. Puedes marcar action items como completados y exportar a ICS, Google Calendar, Jira o CSV.
-- **Búsqueda semántica** — busca por contenido en todas las reuniones. "¿En qué reunión se habló del presupuesto de Q2?" y te devuelve el fragmento exacto con timestamp.
+- **Subir audio**: arrastra un mp3/wav/m4a, ponle título y fecha, y dale a analizar. Verás el pipeline en tiempo real mientras procesa.
+- **Reuniones**: lista de todas las reuniones analizadas. Expandible. Puedes marcar action items como completados y exportar a ICS, Google Calendar, Jira o CSV.
+- **Búsqueda semántica**: busca por contenido en todas las reuniones. "¿En qué reunión se habló del presupuesto de Q2?" y te devuelve el fragmento exacto con timestamp.
 
 ---
 
@@ -148,11 +148,11 @@ src/
 
 ## Notas sobre el LLM
 
-El agente usa un **pipeline prescriptivo**, no ReAct. Esto significa que el LLM ejecuta instrucciones fijas en cada nodo — no decide qué hacer ni en qué orden.
+El agente usa un **pipeline prescriptivo**, no ReAct. Esto significa que el LLM ejecuta instrucciones fijas en cada nodo, no decide qué hacer ni en qué orden.
 
 Esto fue una decisión deliberada: `mistral:7b` con lógica ReAct (el LLM razona y decide qué tool llamar) producía JSON malformado, loops que no terminaban y tools llamadas en orden incorrecto. Con GPT-4 o Claude probablemente funciona, con un 7B local necesitas ser tú quien orqueste.
 
-Si cambias a `openai` o `anthropic` en `LLM_PROVIDER`, el pipeline ReAct dinámico debería funcionar bien — pero el prescriptivo también, y es más predecible.
+Si cambias a `openai` o `anthropic` en `LLM_PROVIDER`, el pipeline ReAct dinámico debería funcionar bien, pero el prescriptivo también es válido y más predecible.
 
 ---
 
@@ -173,4 +173,4 @@ Hay una demo estática (sin API real) en: https://github.com/Izanvz/meeting-agen
 
 ## Créditos
 
-El diseño y desarrollo del dashboard web (`src/api/static/index.html`) fue realizado por [Claude](https://claude.ai) (Anthropic) — incluyendo la interfaz, las exportaciones a ICS/Google Calendar/Jira/CSV, y la integración con la API.
+El diseño y desarrollo del dashboard web (`src/api/static/index.html`) fue realizado por [Claude](https://claude.ai) (Anthropic): interfaz, exportaciones a ICS/Google Calendar/Jira/CSV, e integración con la API.

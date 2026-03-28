@@ -187,7 +187,7 @@
               <ul class="space-y-1">
                 <template x-for="d in job?.decisions ?? []">
                   <li class="text-sm text-zinc-400 flex gap-2">
-                    <span class="text-violet-400 shrink-0">—</span>
+                    <span class="text-violet-400 shrink-0">·</span>
                     <span x-text="d"></span>
                   </li>
                 </template>
@@ -280,7 +280,7 @@
                   <ul class="space-y-1.5">
                     <template x-for="d in expandedMeeting?.decisions ?? []">
                       <li class="text-sm text-zinc-400 flex gap-2">
-                        <span class="text-violet-400/70 shrink-0">—</span>
+                        <span class="text-violet-400/70 shrink-0">·</span>
                         <span x-text="d"></span>
                       </li>
                     </template>
@@ -303,7 +303,7 @@
                             x-text="item.task"></span>
                           <span class="text-xs font-mono ml-1.5 text-zinc-500"
                             x-show="item.owner || item.due_date"
-                            x-text="'— ' + [item.owner, item.due_date].filter(Boolean).join(' · ')"></span>
+                            x-text="'· ' + [item.owner, item.due_date].filter(Boolean).join(' · ')"></span>
                         </div>
                         <span class="text-xs font-mono px-1.5 py-0.5 rounded shrink-0"
                           :class="item.status === 'done' ? 'bg-emerald-950/50 text-emerald-500' : 'bg-zinc-800 text-zinc-500'"
@@ -633,7 +633,7 @@
               `DTSTART;VALUE=DATE:${due}`,
               `DTEND;VALUE=DATE:${due}`,
               `SUMMARY:✅ ${esc(item.task)}`,
-              `DESCRIPTION:Responsable: ${esc(item.owner ?? '—')}\\nReunión: ${esc(meeting.title)}`,
+              `DESCRIPTION:Responsable: ${esc(item.owner ?? '-')}\\nReunión: ${esc(meeting.title)}`,
               item.status === 'done' ? 'STATUS:COMPLETED' : 'STATUS:NEEDS-ACTION',
               'END:VEVENT'
             );
@@ -650,7 +650,7 @@
             meeting.summary ?? '',
             '',
             'Action Items:',
-            ...(meeting.action_items ?? []).map(i => `• ${i.task}${i.owner ? ' (' + i.owner + ')' : ''}${i.due_date ? ' — ' + i.due_date : ''}`),
+            ...(meeting.action_items ?? []).map(i => `• ${i.task}${i.owner ? ' (' + i.owner + ')' : ''}${i.due_date ? ' - ' + i.due_date : ''}`),
           ].join('\n');
 
           const url = new URL('https://calendar.google.com/calendar/render');
@@ -665,8 +665,8 @@
         copyJira(meeting) {
           const lines = [
             `h2. ${meeting.title}`,
-            `*Fecha:* ${meeting.date ?? '—'}`,
-            `*Resumen:* ${meeting.summary ?? '—'}`,
+            `*Fecha:* ${meeting.date ?? '-'}`,
+            `*Resumen:* ${meeting.summary ?? '-'}`,
             '',
           ];
           if (meeting.decisions?.length) {
@@ -676,7 +676,7 @@
             lines.push('h3. Action Items');
             lines.push('||Tarea||Responsable||Fecha límite||Estado||');
             for (const i of meeting.action_items)
-              lines.push(`|${i.task}|${i.owner ?? '—'}|${i.due_date ?? '—'}|${i.status}|`);
+              lines.push(`|${i.task}|${i.owner ?? '-'}|${i.due_date ?? '-'}|${i.status}|`);
           }
           navigator.clipboard.writeText(lines.join('\n'))
             .then(() => this.showToast('Copiado para Jira'))
