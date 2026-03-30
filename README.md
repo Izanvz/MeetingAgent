@@ -6,6 +6,21 @@ Todo corre en local. Sin APIs de pago, sin que tus grabaciones salgan de tu máq
 
 ---
 
+## Stack
+
+| Componente | Herramienta |
+|---|---|
+| Transcripción | [Whisper](https://github.com/openai/whisper) (local, CPU o CUDA) |
+| LLM local | [Ollama](https://ollama.com/) — `mistral:7b` por defecto |
+| LLM externo (opcional) | OpenAI / Anthropic |
+| Pipeline de agente | [LangGraph](https://langchain-ai.github.io/langgraph/) |
+| API | [FastAPI](https://fastapi.tiangolo.com/) + Uvicorn |
+| Base de datos | SQLite (estructurado) + [ChromaDB](https://www.trychroma.com/) (vectores) |
+| Dashboard | Alpine.js — sin build step, sin bundler |
+| Contenedores | Docker + Docker Compose |
+
+---
+
 ## Qué hace
 
 Subes un audio → el agente lo transcribe con Whisper → lo analiza con un LLM → guarda todo en SQLite + ChromaDB → puedes consultarlo desde un dashboard web o desde la API.
@@ -174,3 +189,17 @@ Hay una demo estática (sin API real) en: https://github.com/Izanvz/meeting-agen
 ## Créditos
 
 El diseño y desarrollo del dashboard web (`src/api/static/index.html`) fue realizado por [Claude](https://claude.ai) (Anthropic): interfaz, exportaciones a ICS/Google Calendar/Jira/CSV, e integración con la API.
+
+---
+
+## Autor
+
+**Izan Villarejo Adames** — Backend Developer & AI Engineer
+
+- Portfolio: [portfolio-izanv.vercel.app](https://portfolio-izanv.vercel.app/)
+- LinkedIn: [linkedin.com/in/izan-villarejo-ai](https://www.linkedin.com/in/izan-villarejo-ai/)
+- GitHub: [github.com/Izanvz](https://github.com/Izanvz)
+
+---
+
+> *"La IA no es el producto. El sistema que la integra correctamente, sí."*
