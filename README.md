@@ -188,7 +188,7 @@ Hay una demo estática (sin API real) en: https://github.com/Izanvz/meeting-agen
 
 ## Créditos
 
-El diseño y desarrollo del dashboard web (`src/api/static/index.html`) fue realizado por [Claude](https://claude.ai) (Anthropic): interfaz, exportaciones a ICS/Google Calendar/Jira/CSV, e integración con la API.
+El diseño y desarrollo del dashboard web (`src/api/static/index.html`) fue realizado por [Claude](https://claude.ai) (Anthropic): interfaz y exportaciones a ICS/Google Calendar/Jira/CSV.
 
 ---
 
