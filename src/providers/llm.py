@@ -14,6 +14,7 @@ def get_llm() -> BaseChatModel:
         case "ollama":
             from langchain_ollama import ChatOllama
             base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-            return ChatOllama(model="mistral:7b", base_url=base_url)
+            num_ctx = int(os.getenv("OLLAMA_NUM_CTX", "16384"))
+            return ChatOllama(model="mistral:7b", base_url=base_url, num_ctx=num_ctx)
         case _:
             raise ValueError(f"Unknown LLM_PROVIDER: {provider!r}. Use 'openai', 'claude', or 'ollama'.")

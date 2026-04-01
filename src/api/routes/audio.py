@@ -38,7 +38,15 @@ async def analyze_audio(
 
     job_id = db.create_job()
     background.add_task(_transcribe_and_analyze, job_id, content, ext, resolved_title, resolved_date)
-    return JobResponse(job_id=job_id, status="processing")
+    job = db.get_job(job_id)
+    return JobResponse(
+        job_id=job_id,
+        status=job["status"],
+        stage=job.get("stage"),
+        stage_detail=job.get("stage_detail"),
+        steps=db.list_job_steps(job_id),
+        logs=db.list_job_logs(job_id),
+    )
 
 
 async def _transcribe_and_analyze(
@@ -57,11 +65,14 @@ async def _transcribe_and_analyze(
         with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
             tmp.write(audio_bytes)
             tmp_path = tmp.name
+        db.add_job_log(job_id, "info", f"Audio temporal preparado ({len(audio_bytes)} bytes, extensión {ext})")
 
+        db.update_job_stage(job_id, "transcribing", "Whisper está procesando el audio y generando segmentos")
         segments = await asyncio.to_thread(transcribe, tmp_path)
         if not segments:
             db.fail_job(job_id, "Transcription returned no segments - check audio quality")
             return
+        db.add_job_log(job_id, "info", f"Transcripción completada con {len(segments)} segmentos")
 
         payload = AnalyzeRequest(title=title, date=meeting_date, segments=segments)
         await run_agent(job_id, payload)
@@ -71,3 +82,4 @@ async def _transcribe_and_analyze(
     finally:
         if tmp_path and os.path.exists(tmp_path):
             os.unlink(tmp_path)
+            db.add_job_log(job_id, "info", "Archivo temporal eliminado")

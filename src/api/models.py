@@ -32,9 +32,25 @@ class ActionItemResponse(BaseModel):
     status: str
 
 
+class JobStepResponse(BaseModel):
+    step_key: str
+    sort_order: int
+    label: str
+    detail: str | None = None
+    status: str
+
+
+class JobLogResponse(BaseModel):
+    timestamp: str
+    level: str
+    message: str
+
+
 class JobResponse(BaseModel):
     job_id: str
     status: str
+    stage: str | None = None
+    stage_detail: str | None = None
     meeting_id: str | None = None
     error: str | None = None
     summary: str | None = None
@@ -42,6 +58,8 @@ class JobResponse(BaseModel):
     participants: list[str] | None = None
     action_items: list[ActionItemResponse] | None = None
     report: str | None = None
+    steps: list[JobStepResponse] | None = None
+    logs: list[JobLogResponse] | None = None
 
 
 class MeetingResponse(BaseModel):
@@ -71,3 +89,34 @@ class SearchResult(BaseModel):
 
 class SearchResponse(BaseModel):
     results: list[SearchResult]
+
+
+class SystemServiceStatus(BaseModel):
+    status: str
+    detail: str | None = None
+
+
+class SystemStats(BaseModel):
+    meetings: int
+    tasks_pending: int
+    tasks_done: int
+
+
+class SystemConfig(BaseModel):
+    runtime_mode: str
+    llm_provider: str
+    ollama_model: str | None = None
+    whisper_model: str
+    whisper_device: str
+    whisper_compute_type: str
+    chroma_host: str
+    chroma_port: int
+
+
+class SystemStatusResponse(BaseModel):
+    api: SystemServiceStatus
+    database: SystemServiceStatus
+    chroma: SystemServiceStatus
+    ollama: SystemServiceStatus
+    config: SystemConfig
+    stats: SystemStats

@@ -37,7 +37,15 @@ async def analyze(payload: AnalyzeRequest, background: BackgroundTasks,
                   db: Database = Depends(get_db)):
     job_id = db.create_job()
     background.add_task(run_agent, job_id, payload)
-    return JobResponse(job_id=job_id, status="processing")
+    job = db.get_job(job_id)
+    return JobResponse(
+        job_id=job_id,
+        status=job["status"],
+        stage=job.get("stage"),
+        stage_detail=job.get("stage_detail"),
+        steps=db.list_job_steps(job_id),
+        logs=db.list_job_logs(job_id),
+    )
 
 
 @router.get("/jobs/{job_id}", response_model=JobResponse)
@@ -59,6 +67,13 @@ def get_job(job_id: str, db: Database = Depends(get_db)):
             participants=meeting["speakers"],
             action_items=items,
             report=meeting["report_md"],
+            stage=job.get("stage"),
+            stage_detail=job.get("stage_detail"),
+            steps=db.list_job_steps(job["id"]),
+            logs=db.list_job_logs(job["id"]),
         )
     return JobResponse(job_id=job["id"], status=job["status"],
-                       meeting_id=job.get("meeting_id"), error=job.get("error"))
+                       stage=job.get("stage"), stage_detail=job.get("stage_detail"),
+                       meeting_id=job.get("meeting_id"), error=job.get("error"),
+                       steps=db.list_job_steps(job["id"]),
+                       logs=db.list_job_logs(job["id"]))
