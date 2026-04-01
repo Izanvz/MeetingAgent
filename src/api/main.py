@@ -12,8 +12,13 @@ from src.api.routes.tasks import router as tasks_router
 from src.api.routes.search import router as search_router
 from src.api.routes.audio import router as audio_router
 from src.api.routes.export import router as export_router
+from src.api.routes.system import router as system_router
 
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+
+
+def _serve_app_shell() -> FileResponse:
+    return FileResponse(os.path.join(_STATIC_DIR, "index.html"))
 
 
 def create_app(db_path: str = "data/meetings.db") -> FastAPI:
@@ -37,10 +42,27 @@ def create_app(db_path: str = "data/meetings.db") -> FastAPI:
     app.include_router(search_router)
     app.include_router(audio_router)
     app.include_router(export_router)
+    app.include_router(system_router)
 
     @app.get("/", include_in_schema=False)
     async def dashboard():
-        return FileResponse(os.path.join(_STATIC_DIR, "index.html"))
+        return _serve_app_shell()
+
+    @app.get("/app/upload", include_in_schema=False)
+    async def upload_page():
+        return _serve_app_shell()
+
+    @app.get("/app/meetings", include_in_schema=False)
+    async def meetings_page():
+        return _serve_app_shell()
+
+    @app.get("/app/search", include_in_schema=False)
+    async def search_page():
+        return _serve_app_shell()
+
+    @app.get("/app/setup", include_in_schema=False)
+    async def setup_page():
+        return _serve_app_shell()
 
     if os.path.isdir(_STATIC_DIR):
         app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")

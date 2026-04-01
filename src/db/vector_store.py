@@ -31,8 +31,33 @@ class VectorStore:
         self.collection.add(ids=ids, documents=documents, metadatas=metadatas)
 
     def search(self, query: str, top_k: int = 5) -> list[dict]:
-        results = self.collection.query(query_texts=[query], n_results=top_k)
+        # Ask Chroma for extra headroom so we can remove near-identical hits safely.
+        n_results = max(top_k * 3, top_k)
+        results = self.collection.query(
+            query_texts=[query],
+            n_results=n_results,
+            include=["documents", "metadatas", "distances"],
+        )
         output = []
-        for doc, meta in zip(results["documents"][0], results["metadatas"][0]):
-            output.append({"text": doc, **meta})
+        seen = set()
+        documents = results.get("documents", [[]])[0]
+        metadatas = results.get("metadatas", [[]])[0]
+        distances = results.get("distances", [[]])[0]
+
+        for doc, meta, distance in zip(documents, metadatas, distances):
+            if not doc or not meta:
+                continue
+            dedupe_key = (
+                meta.get("meeting_id"),
+                meta.get("speaker", ""),
+                round(float(meta.get("start", 0.0)), 1),
+                round(float(meta.get("end", 0.0)), 1),
+                " ".join(str(doc).split()).strip().lower(),
+            )
+            if dedupe_key in seen:
+                continue
+            seen.add(dedupe_key)
+            output.append({"text": doc, "score": distance, **meta})
+            if len(output) >= top_k:
+                break
         return output
