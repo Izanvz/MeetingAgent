@@ -42,3 +42,4 @@ PROYECTO_RESUMEN.md
 *.flac
 generate_test_audio.py
 test_meeting*
+docs/
