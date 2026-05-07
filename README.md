@@ -165,7 +165,7 @@ src/
 
 El agente usa un **pipeline prescriptivo**, no ReAct. Esto significa que el LLM ejecuta instrucciones fijas en cada nodo, no decide qué hacer ni en qué orden.
 
-Esto fue una decisión deliberada: `mistral:7b` con lógica ReAct (el LLM razona y decide qué tool llamar) producía JSON malformado, loops que no terminaban y tools llamadas en orden incorrecto. Con GPT-4 o Claude probablemente funciona, con un 7B local necesitas ser tú quien orqueste.
+Esto fue una decisión deliberada: `mistral:7b` con lógica ReAct (el LLM razona y decide qué tool llamar) producía JSON malformado, loops que no terminaban y tools llamadas en orden incorrecto. Con GPT-4 u otros modelos más capaces probablemente funciona, con un 7B local necesitas ser tú quien orqueste.
 
 Si cambias a `openai` o `anthropic` en `LLM_PROVIDER`, el pipeline ReAct dinámico debería funcionar bien, pero el prescriptivo también es válido y más predecible.
 
@@ -183,12 +183,6 @@ pytest
 ## Demo web
 
 Hay una demo estática (sin API real) en: https://github.com/Izanvz/meeting-agent-demo
-
----
-
-## Créditos
-
-El diseño y desarrollo del dashboard web (`src/api/static/index.html`) fue realizado por [Claude](https://claude.ai) (Anthropic): interfaz y exportaciones a ICS/Google Calendar/Jira/CSV.
 
 ---
 
